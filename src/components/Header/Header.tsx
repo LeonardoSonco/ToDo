@@ -1,4 +1,4 @@
-import { MouseEventHandler, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import Modal from "react-modal";
 import styleInput from "./InputStyle.module.css";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -14,21 +14,33 @@ const customStyles = {
     transform: "translate(-50%, -50%)",
     width: "25%",
     padding: "0",
-    "border-radius": "15px",
+    borderRadius: "15px",
   },
 };
 
-export default function Header() {
+type UserType = {
+  UserId: string;
+  UserName: string;
+};
+
+interface HeaderProps {
+  onUserLogin: (user: UserType) => void;
+}
+
+export default function Header({ onUserLogin }: HeaderProps) {
   const [menuHamburguer, setMenuHamburguer] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showModalLogin, setShowModalLogin] = useState(false);
+  const [feedbackModalIsOpen, setFeedbackModalIsOpen] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
   const [valuePassword, setValuePassword] = useState({
     password: "",
     showPassword: false,
   });
   const [valueUsername, setValueUsername] = useState("");
-
-  const [userLogin, setUserLogin] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -74,13 +86,40 @@ export default function Header() {
       setValueUsername(event.target.value);
     };
 
+  const openFeedbackModal = (message: SetStateAction<string>) => {
+    setFeedbackMessage(message);
+    setFeedbackModalIsOpen(true);
+  };
+
+  const closeFeedbackModal = () => {
+    setFeedbackModalIsOpen(false);
+    setFeedbackMessage("");
+  };
   const handleLogin = async () => {
-      const User = await login(valueUsername, valuePassword.password)
-      console.log(User)
-      if(!User){
-        console.log("Username or Password incorrect!")
-      }
-    
+    const user = await login(valueUsername, valuePassword.password);
+    setShowModalLogin(false);
+
+    if (!user) {
+      openFeedbackModal("Login failed. Please check your credentials.");
+    } else {
+      let User = {
+        UserId: user.objectId,
+        UserName: user.username,
+      };
+      onUserLogin(User);
+      openFeedbackModal("Login successful!");
+      setIsLoggedIn(true);
+      closeModal();
+    }
+  };
+
+  const handleLogout = () => {
+    let User = {
+      UserId: "",
+      UserName: "",
+    };
+    onUserLogin(User);
+    setIsLoggedIn(false);
   };
 
   return (
@@ -157,13 +196,22 @@ export default function Header() {
             <h1>ToDo</h1>
           </div>
           <div>
-            <button onClick={openModal}>
-              <h3>Login / Register</h3>
-            </button>
+            {isLoggedIn ? (
+              <button onClick={handleLogout}>
+                <h3>Logout</h3>
+              </button>
+            ) : (
+              <button onClick={openModal}>
+                <h3>Login / Register</h3>
+              </button>
+            )}
 
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={closeModal}
+              shouldCloseOnOverlayClick={true}
+              shouldCloseOnEsc={true}
+              ariaHideApp={false}
               style={customStyles}
               contentLabel="Add Task"
             >
@@ -216,12 +264,32 @@ export default function Header() {
                 >
                   Login
                 </button>
+
                 <span className="text-sm mb-4">
                   Not a member?{" "}
                   <a href="#" className="text-blue-600">
                     Singup
                   </a>
                 </span>
+              </div>
+            </Modal>
+            <Modal
+              isOpen={feedbackModalIsOpen}
+              onRequestClose={closeFeedbackModal}
+              shouldCloseOnOverlayClick={true}
+              shouldCloseOnEsc={true}
+              ariaHideApp={false}
+              style={customStyles}
+              contentLabel="Feedback"
+            >
+              <h2 className="text-center font-semibold text-2xl border-b-2 py-3">
+                Feedback
+              </h2>
+              <div className="flex flex-col justify-center items-center mx-6 gap-3">
+                <p>{feedbackMessage}</p>
+                <button onClick={closeFeedbackModal}>
+                  <h3>Close</h3>
+                </button>
               </div>
             </Modal>
           </div>

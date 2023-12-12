@@ -6,7 +6,7 @@ interface ToDoProps {
 }
 
 const ToDo: React.FC<ToDoProps> = ({ todo, complete }) => {
-  console.log(todo)
+
   return (
     <>
       <div className="max-w-3xl mx-auto">

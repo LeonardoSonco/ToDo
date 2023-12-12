@@ -39,19 +39,22 @@ export default function AddTask() {
           style={customStyles}
           contentLabel="Add Task"
         >
-          <div className="text-right">
-            <span
-              className="material-symbols-outlined hover:cursor-pointer"
-              onClick={closeModal}
-            >
-              cancel
-            </span>
-          </div>
-
           <div className="flex  flex-col justify-center text-xl ">
-            <label htmlFor="addTask" className="text-center">
-              Task to be added
-            </label>
+            <div className="grid grid-cols-4 mb-3">
+              <label
+                htmlFor="addTask"
+                className="text-center col-start-2 col-span-2"
+              >
+                Task to be added
+              </label>
+
+              <span
+                className="material-symbols-outlined hover:cursor-pointer text-end"
+                onClick={closeModal}
+              >
+                cancel
+              </span>
+            </div>
             <div className="flex w-full justify-end">
               <input
                 type="text"
